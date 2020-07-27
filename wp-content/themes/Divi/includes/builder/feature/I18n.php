@@ -11,7 +11,7 @@ class ET_Builder_I18n {
 	/**
 	 * Retrieve a commonly used translation.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @param string $key Translation key.
 	 *

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Compatibility for The Events Calendar Community Events plugin.
  *
- * @since ??
+ * @since 4.4.9
  *
  * @link https://theeventscalendar.com/
  */
@@ -16,7 +16,7 @@ class ET_Builder_Plugin_Compat_The_Events_Calendar_Community_Events extends ET_B
 	/**
 	 * Constructor.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 */
 	public function __construct() {
 		$this->plugin_id = 'the-events-calendar-community-events/tribe-community-events.php';
@@ -26,7 +26,7 @@ class ET_Builder_Plugin_Compat_The_Events_Calendar_Community_Events extends ET_B
 	/**
 	 * Hook methods to WordPress.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @return void
 	 */

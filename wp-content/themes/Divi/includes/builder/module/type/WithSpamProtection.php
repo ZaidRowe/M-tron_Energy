@@ -23,7 +23,7 @@ abstract class ET_Builder_Module_Type_WithSpamProtection extends ET_Builder_Modu
 	/**
 	 * Shortcode attributes array checksum.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @var
 	 */

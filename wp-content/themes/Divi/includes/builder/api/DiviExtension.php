@@ -156,7 +156,7 @@ class DiviExtension {
 	/**
 	 * Enqueues minified (production) or non-minified (hot reloaded) backend styles.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 */
 	protected function _enqueue_backend_styles() {
 		if ( $this->_debug ) {
@@ -277,7 +277,7 @@ class DiviExtension {
 	 * {@see 'wp_enqueue_scripts'}
 	 *
 	 * @since 3.1
-	 * @since ?? Added backend styles for handling custom builder styles.
+	 * @since 4.4.9 Added backend styles for handling custom builder styles.
 	 */
 	public function wp_hook_enqueue_scripts() {
 		if ( $this->_debug ) {
@@ -312,7 +312,7 @@ class DiviExtension {
 	/**
 	 * Enqueues the extension's scripts and styles for admin area.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 */
 	public function admin_hook_enqueue_scripts() {
 		if ( et_builder_bfb_enabled() || et_builder_is_tb_admin_screen() ) {

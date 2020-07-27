@@ -1,3 +1,6 @@
+version 4.5 ( updated 07-09-2020 )
+- Added new Divi Presets system
+
 version 4.4.9 ( updated 07-01-2020 )
 - Fixed conflict "Use Current Page" option with "Product Category" view type in Shop Module.
 - In order to increase the rating of page loading speed and to eliminate the warning from Lighthouse "Ensure text remains visible during webfont loading", the directive font-display has been added to css rules@font-face (for the Divi fonts and for Opens Sans fonts, which loading from googleapis.com).

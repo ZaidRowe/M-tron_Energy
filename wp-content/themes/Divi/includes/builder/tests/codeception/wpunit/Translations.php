@@ -5,7 +5,7 @@ namespace ET\Builder\Codeception\WPUnit;
 /**
  * Records how many time gettext is called for the same string.
  *
- * @since ??
+ * @since 4.4.9
  */
 class Translations {
 	protected static $stats = array();

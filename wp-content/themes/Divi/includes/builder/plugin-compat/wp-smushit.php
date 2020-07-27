@@ -143,7 +143,7 @@ class ET_Builder_Plugin_Compat_Smush extends ET_Builder_Plugin_Compat_Base {
 	 * Maybe convert background images local URL inside the styles into CDN before it's
 	 * saved as static resource.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @param array $data_resource
 	 * @param string $context

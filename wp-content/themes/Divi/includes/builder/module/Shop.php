@@ -239,14 +239,15 @@ class ET_Builder_Module_Shop extends ET_Builder_Module_Type_PostBased {
 				'type'             => 'select',
 				'option_category'  => 'basic_option',
 				'options'          => array(
-					'recent'           => esc_html__( 'Recent Products', 'et_builder' ),
+					'default'          => esc_html__( 'Default (Menu ordering + name)', 'et_builder' ),
+					'latest'           => esc_html__( 'Latest Products', 'et_builder' ),
 					'featured'         => esc_html__( 'Featured Products', 'et_builder' ),
 					'sale'             => esc_html__( 'Sale Products', 'et_builder' ),
 					'best_selling'     => esc_html__( 'Best Selling Products', 'et_builder' ),
 					'top_rated'        => esc_html__( 'Top Rated Products', 'et_builder' ),
 					'product_category' => esc_html__( 'Product Category', 'et_builder' ),
 				),
-				'default_on_front' => 'recent',
+				'default_on_front' => 'default',
 				'affects'          => array(
 					'include_categories',
 				),
@@ -365,7 +366,7 @@ class ET_Builder_Module_Shop extends ET_Builder_Module_Type_PostBased {
 				),
 				'toggle_slug'      => 'main_content',
 				'show_if_not'      => array(
-					'type' => 'recent',
+					'type' => 'latest',
 				),
 			),
 			'sale_badge_color'    => array(
@@ -484,8 +485,8 @@ class ET_Builder_Module_Shop extends ET_Builder_Module_Type_PostBased {
 		$post_id            = isset( $current_page['id'] ) ? (int) $current_page['id'] : 0;
 		$type               = $this->props['type'];
 		$posts_number       = $this->props['posts_number'];
-		$orderby            = 'recent' === $type ? 'id' : $this->props['orderby'];
-		$order              = 'recent' === $type ? 'DESC' : 'ASC';
+		$orderby            = 'default' === $type ? 'id' : $this->props['orderby'];
+		$order              = 'default' === $type ? 'DESC' : 'ASC';
 		$columns            = $this->props['columns_number'];
 		$pagination         = 'on' === $this->prop( 'show_pagination', 'off' );
 		$product_categories = array();
@@ -534,9 +535,14 @@ class ET_Builder_Module_Shop extends ET_Builder_Module_Type_PostBased {
 			}
 		}
 
-		if ( 'default' === $orderby && 'recent' !== $type ) {
+		// Recent was the default option in Divi once, so it is added here for the websites created before the change
+		if ( 'default' === $orderby && ( 'default' === $type || 'recent' === $type ) ) {
 			// Leave the attribute empty to allow WooCommerce to take over and use the default sorting.
 			$orderby = '';
+		}
+
+		if ( 'latest' === $type ) {
+			$orderby = 'date-desc';
 		}
 
 		if ( in_array( $orderby, array( 'price-desc', 'date-desc' ) ) ) {
@@ -722,7 +728,7 @@ class ET_Builder_Module_Shop extends ET_Builder_Module_Type_PostBased {
 		if ( '0' === $columns ) {
 			$this->add_classname( 'et_pb_shop_grid' );
 		}
-		
+
 		$shop_order = self::_get_index( array( self::INDEX_MODULE_ORDER, $render_slug ) );
 
 		$output = sprintf(

@@ -2,7 +2,7 @@
 /**
  * Fires before the builder's structure element classes are loaded.
  *
- * @since ??
+ * @since 4.4.9
  */
 do_action( 'et_builder_structure_elements_load' );
 
@@ -2715,6 +2715,6 @@ new ET_Builder_Column;
 /**
  * Fires after the builder's structure element classes are loaded.
  *
- * @since ??
+ * @since 4.4.9
  */
 do_action( 'et_builder_structure_elements_loaded' );

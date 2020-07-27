@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ET_BUILDER_PRODUCT_VERSION' ) ) {
 	// Note, this will be updated automatically during grunt release task.
-	define( 'ET_BUILDER_PRODUCT_VERSION', '4.4.9' );
+	define( 'ET_BUILDER_PRODUCT_VERSION', '4.5.0' );
 }
 
 if ( ! defined( 'ET_BUILDER_VERSION' ) ) {
@@ -1454,10 +1454,10 @@ function et_fb_process_to_shortcode( $object, $options = array(), $library_item_
 	$options = wp_parse_args( $options, array(
 		'force_valid_slugs'       => false,
 		'post_type'               => false,
-		'apply_custom_defaults'   => false,
+		'apply_global_presets'   => false,
 	) );
 
-	$custom_defaults_manager = ET_Builder_Custom_Defaults_Settings::instance();
+	$global_presets_manager = ET_Builder_Global_Presets_Settings::instance();
 
 	// do not proceed if $object is empty
 	if ( empty( $object ) ) {
@@ -1523,10 +1523,10 @@ function et_fb_process_to_shortcode( $object, $options = array(), $library_item_
 			$content = stripslashes( $item['raw_child_content'] );
 		}
 
-		if ( $options['apply_custom_defaults'] ) {
-			$module_type            = $custom_defaults_manager->maybe_convert_module_type( $type, $item['attrs'] );
-			$module_custom_defaults = $custom_defaults_manager->get_module_custom_defaults( $module_type );
-			$item['attrs']          = array_merge( $module_custom_defaults, $item['attrs'] );
+		if ( $options['apply_global_presets'] ) {
+			$module_type           = $global_presets_manager->maybe_convert_module_type( $type, $item['attrs'] );
+			$module_global_presets = $global_presets_manager->get_module_presets_settings( $module_type, $item['attrs'] );
+			$item['attrs']         = array_merge( $module_global_presets, $item['attrs'] );
 		}
 
 		foreach ( $item['attrs'] as $attribute => $value ) {
@@ -2074,10 +2074,10 @@ function et_fb_prepare_shortcode() {
 	}
 
 	$content               = isset( $_POST['et_page_content'] ) ? json_decode( stripslashes( $_POST['et_page_content'] ), true ) : '';
-	$apply_custom_defaults = isset( $_POST['apply_custom_defaults'] ) ? wp_validate_boolean( $_POST['apply_custom_defaults'] ) : false;
+	$apply_global_presets = isset( $_POST['apply_global_presets'] ) ? wp_validate_boolean( $_POST['apply_global_presets'] ) : false;
 
 	$options = array(
-		'apply_custom_defaults' => $apply_custom_defaults,
+		'apply_global_presets' => $apply_global_presets,
 	);
 
 	$result  = $content ? et_fb_process_to_shortcode( $content, $options, '', false ) : '';
@@ -4497,34 +4497,38 @@ add_action('admin_init', 'et_pb_set_editor_available_cookie');
 function et_pb_history_localization() {
 	return array(
 		'verb' => array(
-			'did'           => esc_html__( 'Did', 'et_builder' ),
-			'added'         => esc_html__( 'Added', 'et_builder' ),
-			'edited'        => esc_html__( 'Edited', 'et_builder' ),
-			'removed'       => esc_html__( 'Removed', 'et_builder' ),
-			'moved'         => esc_html__( 'Moved', 'et_builder' ),
-			'expanded'      => esc_html__( 'Expanded', 'et_builder' ),
-			'collapsed'     => esc_html__( 'Collapsed', 'et_builder' ),
-			'locked'        => esc_html__( 'Locked', 'et_builder' ),
-			'unlocked'      => esc_html__( 'Unlocked', 'et_builder' ),
-			'cloned'        => esc_html__( 'Cloned', 'et_builder' ),
-			'cleared'       => esc_html__( 'Cleared', 'et_builder' ),
-			'enabled'       => esc_html__( 'Enabled', 'et_builder' ),
-			'disabled'      => esc_html__( 'Disabled', 'et_builder' ),
-			'copied'        => esc_html__( 'Copied', 'et_builder' ),
-			'reset'         => esc_html__( 'Reset', 'et_builder' ),
-			'cut'           => esc_html__( 'Cut', 'et_builder' ),
-			'pasted'        => esc_html__( 'Pasted', 'et_builder' ),
-			'pasted_styles' => esc_html__( 'Pasted Styles', 'et_builder' ),
-			'renamed'       => esc_html__( 'Renamed', 'et_builder' ),
-			'loaded'        => esc_html__( 'Loaded', 'et_builder' ),
-			'turnon'        => esc_html__( 'Turned On', 'et_builder' ),
-			'turnoff'       => esc_html__( 'Turned Off', 'et_builder' ),
-			'globalon'      => esc_html__( 'Made Global', 'et_builder' ),
-			'globaloff'     => esc_html__( 'Disabled Global', 'et_builder' ),
-			'configured'    => esc_html__( 'Configured', 'et_builder' ),
-			'find_replace'  => esc_html__( 'Find & Replace', 'et_builder' ),
-			'extend_styles' => esc_html__( 'Extend Styles', 'et_builder' ),
-			'imported'      => esc_html__( 'Imported From Layout', 'et_builder' ),
+			'did'                     => esc_html__( 'Did', 'et_builder' ),
+			'added'                   => esc_html__( 'Added', 'et_builder' ),
+			'edited'                  => esc_html__( 'Edited', 'et_builder' ),
+			'removed'                 => esc_html__( 'Removed', 'et_builder' ),
+			'moved'                   => esc_html__( 'Moved', 'et_builder' ),
+			'expanded'                => esc_html__( 'Expanded', 'et_builder' ),
+			'collapsed'               => esc_html__( 'Collapsed', 'et_builder' ),
+			'locked'                  => esc_html__( 'Locked', 'et_builder' ),
+			'unlocked'                => esc_html__( 'Unlocked', 'et_builder' ),
+			'cloned'                  => esc_html__( 'Cloned', 'et_builder' ),
+			'cleared'                 => esc_html__( 'Cleared', 'et_builder' ),
+			'enabled'                 => esc_html__( 'Enabled', 'et_builder' ),
+			'disabled'                => esc_html__( 'Disabled', 'et_builder' ),
+			'copied'                  => esc_html__( 'Copied', 'et_builder' ),
+			'reset'                   => esc_html__( 'Reset', 'et_builder' ),
+			'cut'                     => esc_html__( 'Cut', 'et_builder' ),
+			'pasted'                  => esc_html__( 'Pasted', 'et_builder' ),
+			'pasted_styles'           => esc_html__( 'Pasted Styles', 'et_builder' ),
+			'renamed'                 => esc_html__( 'Renamed', 'et_builder' ),
+			'loaded'                  => esc_html__( 'Loaded', 'et_builder' ),
+			'turnon'                  => esc_html__( 'Turned On', 'et_builder' ),
+			'turnoff'                 => esc_html__( 'Turned Off', 'et_builder' ),
+			'globalon'                => esc_html__( 'Made Global', 'et_builder' ),
+			'globaloff'               => esc_html__( 'Disabled Global', 'et_builder' ),
+			'configured'              => esc_html__( 'Configured', 'et_builder' ),
+			'find_replace'            => esc_html__( 'Find & Replace', 'et_builder' ),
+			'extend_styles'           => esc_html__( 'Extend Styles', 'et_builder' ),
+			'imported'                => esc_html__( 'Imported From Layout', 'et_builder' ),
+			'presetCreated'           => esc_html__( 'Preset Created For', 'et_builder' ),
+			'presetNameChanged'       => esc_html__( 'Preset Name Changed For', 'et_builder' ),
+			'presetDeleted'           => esc_html__( 'Preset Deleted For', 'et_builder' ),
+			'presetAssignedAsDefault' => esc_html__( 'Preset Assigned As Default For', 'et_builder' ),
 		),
 		'noun' => array(
 			'section'           => esc_html__( 'Section', 'et_builder' ),

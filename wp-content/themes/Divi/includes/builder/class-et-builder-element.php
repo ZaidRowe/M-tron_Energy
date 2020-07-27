@@ -28,7 +28,7 @@ class ET_Builder_Element {
 	/**
 	 * Cached translations.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @var array[]
 	 */
@@ -262,9 +262,9 @@ class ET_Builder_Element {
 	const INDEX_INNER_MODULE_ORDER = 'inner_module_order';
 
 	/**
-	 * @var ET_Builder_Custom_Defaults_Settings
+	 * @var ET_Builder_Global_Presets_Settings
 	 */
-	protected static $custom_defaults_manager = null;
+	protected static $global_presets_manager = null;
 
 	/**
 	 * Flag whether the module is rendering.
@@ -366,8 +366,8 @@ class ET_Builder_Element {
 			self::$_ = self::$data_utils = ET_Core_Data_Utils::instance();
 		}
 
-		if ( null === self::$custom_defaults_manager ) {
-			self::$custom_defaults_manager = ET_Builder_Custom_Defaults_Settings::instance();
+		if ( null === self::$global_presets_manager ) {
+			self::$global_presets_manager = ET_Builder_Global_Presets_Settings::instance();
 		}
 
 		if ( null === self::$option_template ) {
@@ -1138,6 +1138,9 @@ class ET_Builder_Element {
 
 		// Add _dynamic_attributes field to all modules.
 		$fields_unprocessed['_dynamic_attributes'] = array( 'type' => 'skip' );
+
+		// Add support for the style presets
+		$fields_unprocessed['_module_preset'] = array( 'type' => 'skip' );
 
 		if ( function_exists( 'et_builder_definition_sort' ) ) {
 			et_builder_definition_sort( $fields_unprocessed );
@@ -2022,7 +2025,7 @@ class ET_Builder_Element {
 
 		$this->_maybe_rebuild_option_template();
 
-		$attrs = $this->_maybe_add_custom_defaults( $attrs, $render_slug );
+		$attrs = $this->_maybe_add_global_presets_settings( $attrs, $render_slug );
 
 		// Use the current layout or post ID for AB testing. This is not guaranteed to be the real
 		// current post ID if we are rendering a TB layout.
@@ -2609,8 +2612,8 @@ class ET_Builder_Element {
 		$must_print_fields = apply_filters( $this->slug . '_must_print_attributes', $must_print_fields );
 		$slug              = isset( $this->global_settings_slug ) ? $this->global_settings_slug : $this->slug;
 
-		$module_slug            = self::$custom_defaults_manager->maybe_convert_module_type( $this->slug, $this->props );
-		$module_custom_defaults = self::$custom_defaults_manager->get_module_custom_defaults( $module_slug );
+		$module_slug            = self::$global_presets_manager->maybe_convert_module_type( $this->slug, $this->props );
+		$module_preset_settings = self::$global_presets_manager->get_module_presets_settings( $module_slug, $this->props );
 
 		foreach ( $fields as $field_key => $field_settings ) {
 			$global_setting_name  = "$slug-$field_key";
@@ -2622,7 +2625,7 @@ class ET_Builder_Element {
 
 			$attr_value = self::$_->array_get( $this->props, $field_key, '' );
 
-			if ( $attr_value && $attr_value === $global_setting_value && ! array_key_exists( $field_key, $module_custom_defaults ) ) {
+			if ( $attr_value && $attr_value === $global_setting_value && ! array_key_exists( $field_key, $module_preset_settings ) ) {
 				$this->props[ $field_key ] = '';
 			}
 		}
@@ -2915,8 +2918,8 @@ class ET_Builder_Element {
 			}
 		}
 
-		$module_slug = self::$custom_defaults_manager->maybe_convert_module_type( $this->slug, $this->props );
-		$module_custom_defaults = self::$custom_defaults_manager->get_module_custom_defaults( $module_slug );
+		$module_slug = self::$global_presets_manager->maybe_convert_module_type( $this->slug, $this->props );
+		$module_preset_settings = self::$global_presets_manager->get_module_presets_settings( $module_slug, $this->props );
 
 		foreach( $this->props as $shortcode_attr_key => $shortcode_attr_value ) {
 			$value = $shortcode_attr_value;
@@ -2945,10 +2948,10 @@ class ET_Builder_Element {
 				} else {
 					$is_equal_to_default          = isset( $fields[ $shortcode_attr_key ]['default'] ) && $value === $fields[ $shortcode_attr_key ]['default'];
 					$is_equal_to_default_on_front = isset( $fields[ $shortcode_attr_key ]['default_on_front'] ) && $value === $fields[ $shortcode_attr_key ]['default_on_front'];
-					$has_custom_default           = isset( $module_custom_defaults[ $shortcode_attr_key ] );
+					$has_custom_default           = isset( $module_preset_settings[ $shortcode_attr_key ] );
 
 					if ( $has_custom_default && isset( $atts[ $shortcode_attr_key ] ) ) {
-						$is_equal_to_custom_default = $has_custom_default && $atts[ $shortcode_attr_key ] === $module_custom_defaults[ $shortcode_attr_key ];
+						$is_equal_to_custom_default = $has_custom_default && $atts[ $shortcode_attr_key ] === $module_preset_settings[ $shortcode_attr_key ];
 						$value                      = $is_equal_to_custom_default ? '' : $atts[ $shortcode_attr_key ];
 					} else {
 						if ( $is_equal_to_default || $is_equal_to_default_on_front ) {
@@ -2958,7 +2961,9 @@ class ET_Builder_Element {
 				}
 
 			} else {
-				$value = '';
+				if ( $shortcode_attr_key !== '_module_preset' ) {
+					$value = '';
+				}
 			}
 
 			// generic override, disabled=off is an unspoken default
@@ -3230,7 +3235,7 @@ class ET_Builder_Element {
 	}
 
 	/**
-	 * Adds module custom defaults.
+	 * Adds Global Presets settings.
 	 *
 	 * @since 3.26
 	 *
@@ -3239,13 +3244,13 @@ class ET_Builder_Element {
 	 *
 	 * @return array
 	 */
-	protected function _maybe_add_custom_defaults( $attrs, $render_slug ) {
+	protected function _maybe_add_global_presets_settings( $attrs, $render_slug ) {
 		if ( ( et_fb_is_enabled() || et_builder_bfb_enabled() ) && ! self::is_theme_builder_layout() ) {
 			return $attrs;
 		}
 
-		$render_slug            = self::$custom_defaults_manager->maybe_convert_module_type( $render_slug, $attrs );
-		$module_custom_defaults = self::$custom_defaults_manager->get_module_custom_defaults( $render_slug );
+		$render_slug            = self::$global_presets_manager->maybe_convert_module_type( $render_slug, $attrs );
+		$module_preset_settings = self::$global_presets_manager->get_module_presets_settings( $render_slug, $attrs );
 
 		if ( is_array( $attrs ) ) {
 			// We need a special handler for social media child items module background color setting
@@ -3253,8 +3258,8 @@ class ET_Builder_Element {
 			if ( 'et_pb_social_media_follow_network' === $render_slug
 				&& ! empty( $attrs['social_network'] )
 				&& ! empty( $attrs['background_color'] )
-				&& ! empty( $module_custom_defaults['background_color'] )
-				&& $attrs['background_color'] !== $module_custom_defaults['background_color']
+				&& ! empty( $module_preset_settings['background_color'] )
+				&& $attrs['background_color'] !== $module_preset_settings['background_color']
 			) {
 				$background_color_definition = self::$_->array_get( $this->get_fields(), "social_network.options.{$attrs['social_network']}.data.color" );
 
@@ -3264,10 +3269,10 @@ class ET_Builder_Element {
 				}
 			}
 
-			return array_merge( $module_custom_defaults, $attrs );
+			return array_merge( $module_preset_settings, $attrs );
 		}
 
-		return $module_custom_defaults;
+		return $module_preset_settings;
 	}
 
 	/**
@@ -3365,7 +3370,7 @@ class ET_Builder_Element {
 	/**
 	 * Set i18n used by font fields.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @return void
 	 */
@@ -7777,10 +7782,10 @@ class ET_Builder_Element {
 	}
 
 	/**
-	 * Returns modules custom defaults settings
+	 * Returns Global Presets settings
 	 */
-	public static function get_custom_defaults() {
-		return self::$custom_defaults_manager->get_custom_defaults();
+	public static function get_global_presets() {
+		return self::$global_presets_manager->get_global_presets();
 	}
 
 	/**
@@ -15838,9 +15843,9 @@ class ET_Builder_Element {
 				$module_fields[ $_module_slug ][ $field_key ] = $field;
 			}
 
-			// Some module types must be separated for the Custom Defaults.
-			// For example we keep all section types as `et_pb_section` however they need separate Custom Defaults.
-			$additional_slugs = self::$custom_defaults_manager->get_module_additional_slugs( $_module_slug );
+			// Some module types must be separated for the Global Presets.
+			// For example we keep all section types as `et_pb_section` however they need different Global Presets.
+			$additional_slugs = self::$global_presets_manager->get_module_additional_slugs( $_module_slug );
 			foreach ( $additional_slugs as $alias ) {
 				$module_fields[ $alias ] = $module_fields[ $_module_slug ];
 			}
@@ -15973,9 +15978,9 @@ class ET_Builder_Element {
 				}
 			}
 
-			// Some module types must be separated for the Custom Defaults.
-			// For example we keep all section types as `et_pb_section` however they need separate Custom Defaults.
-			$additional_slugs = self::$custom_defaults_manager->get_module_additional_slugs( $_module_slug );
+			// Some module types must be separated for the Global Presets.
+			// For example we keep all section types as `et_pb_section` however they need different Global Presets.
+			$additional_slugs = self::$global_presets_manager->get_module_additional_slugs( $_module_slug );
 			foreach ( $additional_slugs as $alias ) {
 				$module_fields[ $alias ] = $module_fields[ $_module_slug ];
 			}
@@ -16038,9 +16043,9 @@ class ET_Builder_Element {
 				}
 			}
 
-			// Some module types must be separated for the Custom Defaults.
-			// For example we keep all section types as `et_pb_section` however they need separate Custom Defaults.
-			$additional_slugs = self::$custom_defaults_manager->get_module_additional_slugs( $_module_slug );
+			// Some module types must be separated for the Global Presets.
+			// For example we keep all section types as `et_pb_section` however they need different Global Presets.
+			$additional_slugs = self::$global_presets_manager->get_module_additional_slugs( $_module_slug );
 			foreach ( $additional_slugs as $alias ) {
 				$module_fields[ $alias ] = $module_fields[ $_module_slug ];
 			}

@@ -545,7 +545,21 @@ class ET_Builder_Module_Slider_Item extends ET_Builder_Module {
 		// Attribute inheritance should be done on front-end / published page only.
 		// Don't run attribute inheritance in VB and Backend to avoid attribute inheritance accidentally being saved on VB / BB
 		if ( ! empty( $et_pb_slider ) && ! is_admin() && ! et_fb_is_enabled() ) {
+			$view_modes = array( '', '__hover', '_phone', '_tablet' );
 			foreach ( $et_pb_slider as $slider_attr => $slider_attr_value ) {
+				$maybe_next_slider_attr = false;
+				foreach( $view_modes as $mode ) {
+					$current_view_bc_enable_attr = 'background_enable_color' . $mode;
+					if( $slider_attr === $current_view_bc_enable_attr) {
+						// Do not inherit the background color off from the parent slider
+						$this->props[ $current_view_bc_enable_attr ] = isset( $this->props[ $current_view_bc_enable_attr ] ) && 'off' === $this->props[ $current_view_bc_enable_attr ] ? 'off' : 'on';
+						$maybe_next_slider_attr = true;
+					}
+				}
+				if( $maybe_next_slider_attr ) {
+					continue;
+				}
+
 				// Get default value
 				$default = isset( $this->fields_unprocessed[ $slider_attr ][ 'default' ] ) ? $this->fields_unprocessed[ $slider_attr ][ 'default' ] : '';
 
@@ -725,7 +739,7 @@ class ET_Builder_Module_Slider_Item extends ET_Builder_Module {
 			et_pb_responsive_options()->generate_responsive_css( $bg_overlay_color_values, '%%order_class%%.et_pb_slide .et_pb_slide_overlay_container', 'background-color', $render_slug, '', 'color' );
 		}
 
-		if ( ! empty( $background_color ) ) {
+		if ( ! empty( $background_color ) && 'off' !== $this->props['background_enable_color'] ) {
 			ET_Builder_Element::set_style( $render_slug, array(
 				'selector'    => '%%order_class%%',
 				'declaration' => sprintf(

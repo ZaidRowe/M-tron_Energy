@@ -382,7 +382,7 @@ function et_fb_get_dynamic_backend_helpers() {
 				),
 			),
 		),
-		'customDefaults'                  => ET_Builder_Element::get_custom_defaults(),
+		'globalPresets'                  => ET_Builder_Element::get_global_presets(),
 		'module_cache_filename_id'        => ET_Builder_Element::get_cache_filename_id( $post_type ),
 		'registeredPostTypeOptions'       => et_get_registered_post_type_options(),
 	);
@@ -394,10 +394,10 @@ function et_fb_get_dynamic_backend_helpers() {
 		'prefix'          => ET_BUILDER_CSS_PREFIX,
 	);
 
-	$custom_defaults_unmigrated = et_get_option( ET_Builder_Custom_Defaults_Settings::CUSTOM_DEFAULTS_UNMIGRATED_OPTION, false );
+	$custom_defaults_unmigrated = et_get_option( ET_Builder_Global_Presets_Settings::CUSTOM_DEFAULTS_UNMIGRATED_OPTION, false );
 
 	if ( $custom_defaults_unmigrated ) {
-		$helpers['customDefaultsUnmigrated'] = $custom_defaults_unmigrated;
+		$helpers['customDefaultsUnmigrated'] = ET_Builder_Global_Presets_Settings::migrate_custom_defaults_to_global_presets( $custom_defaults_unmigrated );
 	}
 
 	$helpers['dynamicContentFields'] = et_builder_get_dynamic_content_fields( $post_id, 'edit' );
@@ -584,8 +584,8 @@ function et_fb_get_static_backend_helpers($post_type) {
 		'coreModalTemplate'            => et_builder_get_core_modal_template(),
 		'coreModalButtonsTemplate'     => et_builder_get_core_modal_buttons_template(),
 		'unsavedNotification'          => et_builder_get_unsaved_notification_texts(),
-		'customDefaultsSaveFailure'    => et_builder_get_custom_defaults_save_failure_texts(),
-		'customDefaultsLoadFailure'    => et_builder_get_custom_defaults_load_failure_texts(),
+		'globalPresetsSaveFailure'    => et_builder_get_global_presets_save_failure_texts(),
+		'globalPresetsLoadFailure'    => et_builder_get_global_presets_load_failure_texts(),
 		'backupLabel'                  => __( 'Backup of %s', 'et_builder' ),
 
 		'googleAPIKey'                 => et_pb_is_allowed( 'theme_options' ) ? get_option( 'et_google_api_settings' ) : '',
@@ -1423,6 +1423,12 @@ function et_fb_get_static_backend_helpers($post_type) {
 				'name' => esc_html__( 'An introduction to Page Settings', 'et_builder' ),
 			),
 		),
+		'et_pb_global_presets' => array(
+			array(
+				'id'   => esc_html__( '3VqtCV5Obx4', 'et_builder' ),
+				'name' => esc_html__( 'Using Divi Presets', 'et_builder' ),
+			),
+		),
 	), ET_Builder_Element::get_help_videos() );
 
 	// Internationalization.
@@ -1591,12 +1597,11 @@ function et_fb_get_static_backend_helpers($post_type) {
 				'options_group' => esc_html__( 'Extend %s Styles', 'et_builder' ),
 				'option'        => esc_html__( 'Extend %s', 'et_builder' ),
 			),
-			'makeDefault'              => esc_html__( 'Make Default', 'et_builder' ),
-			'makeStyleDefault'         => esc_html__( 'Make Style Default', 'et_builder' ),
-			'makeStylesDefault'        => esc_html__( 'Make Styles Default', 'et_builder' ),
-			'modifyDefaultValue'       => esc_html__( 'Modify Default Value', 'et_builder' ),
-			'modifyDefaultValues'      => esc_html__( 'Modify Default Values', 'et_builder' ),
-			'goToLayer'                => esc_html__( 'Go To Layer', 'et_builder' ),
+			'applyToCurrentPreset'       => esc_html__( 'Apply To Active Preset', 'et_builder' ),
+			'applyStyleToCurrentPreset'  => esc_html__( 'Apply Style To Active Preset', 'et_builder' ),
+			'applyStylesToActivePreset'  => esc_html__( 'Apply Styles To Active Preset', 'et_builder' ),
+			'editPresetStyle'            => esc_html__( 'Edit Preset Style', 'et_builder' ),
+			'goToLayer'                  => esc_html__( 'Go To Layer', 'et_builder' ),
 		),
 		'tooltips' => array(
 			'insertModule'          => esc_html__( 'Insert Module', 'et_builder' ),
@@ -1634,31 +1639,39 @@ function et_fb_get_static_backend_helpers($post_type) {
 			'noFile'                => esc_html__( 'No File Selected', 'et_builder' ),
 			'chooseFile'            => esc_html__( 'Choose File', 'et_builder' ),
 			'portabilityOptions'    => esc_html__( 'Options:', 'et_builder' ),
-			'includeCustomDefaults' => esc_html__( 'Include Global Defaults', 'et_builder' ),
-			'applyCustomDefaults'   => esc_html__( 'Apply To Exported Layout', 'et_builder' ),
-			'customDefaults'        => array(
+			'includeGlobalPresets'  => esc_html__( 'Include Presets', 'et_builder' ),
+			'applyGlobalPresets'   => esc_html__( 'Apply To Exported Layout', 'et_builder' ),
+			'globalPresets'        => array(
 				'title'            => esc_html__( 'Are You Sure?', 'et_builder' ),
 				'text'             => array(
-					'madeChanges'    => esc_html__( 'You\'ve made changes to the %1$s default settings.', 'et_builder' ),
+					'madeChanges'    => esc_html__( 'You\'ve made changes to the %1$s preset settings.', 'et_builder' ),
 					'wishToProceed'  => array(
-						'saveDefaults'      => esc_html__( 'This will affect all %1$s across your entire site. Do you wish to proceed?', 'et_builder' ),
-						'makeStylesDefault' => esc_html__( 'This will affect all %1$s of %2$s across your entire site. Do you wish to proceed?', 'et_builder' ),
+						'saveDefaults'               => esc_html__( 'This will affect all %1$s across your entire site. Do you wish to proceed?', 'et_builder' ),
+						'applyStylesToActivePreset'  => esc_html__( 'This will affect all <strong>%1$s</strong> using the <strong>%2$s</strong> across your entire site. Do you wish to proceed?', 'et_builder' ),
+						'deletePreset'               => esc_html__( 'This will delete and unassign this <strong>%1$s</strong> preset across your entire site, and assign the <strong>Default %2$s Preset</strong> in all instances. Do you wish to proceed?', 'et_builder' ),
+						'assignPresetToDefault'      => esc_html__( 'This will assign <strong>%1$s</strong> as the <strong>Default %3$s Preset</strong> across your entire site. All %2$s that use the <strong>Default %3$s Preset</strong> will be affected. Do you wish to proceed?', 'et_builder' ),
 					),
-					'applyOnImport' => esc_html__( 'You are about to import the layout\'s defaults.', 'et_builder' ),
+					'applyOnImport' => esc_html__( 'You are about to import the layout\'s presets.', 'et_builder' ),
 				),
 				'module'           => esc_html__( 'Module', 'et_builder' ),
 				'modules'          => esc_html__( 'Modules', 'et_builder' ),
-				'migrationWarning' => esc_html__( 'The first time defaults are saved, settings will be migrated from the retired Module Customizer. This may result in slight text size changes in 1/3 and 1/4 columns and some slight padding changes in some modules.' ),
+				'migrationWarning' => esc_html__( 'The first time presets are saved, settings will be migrated from the retired Module Customizer. This may result in slight text size changes in 1/3 and 1/4 columns and some slight padding changes in some modules.' ),
+				'presets'          => array(
+					'createNewPreset'              => esc_html__( 'Create New Preset From Current Styles', 'et_builder' ),
+					'editPresets'                  => esc_html__( 'Manage Presets', 'et_builder' ),
+					'addNewPreset'                 => esc_html__( 'Add New Preset', 'et_builder' ),
+				),
 			),
 			'portabilityTabs'           => array(
 				'import' => array(
-					'replaceLayout'         => esc_html__( 'Replace existing content.', 'et_builder' ),
-					'importBackUp'          => esc_html__( 'Download backup before importing', 'et_builder' ),
-					'addToLibrary'          => esc_html__( 'Add to Library', 'et_builder' ),
-					'includeCustomDefaults' => esc_html__( 'Apply Layout\'s Defaults To This Website', 'et_builder' ),
+					'replaceLayout'        => esc_html__( 'Replace existing content.', 'et_builder' ),
+					'importBackUp'         => esc_html__( 'Download backup before importing', 'et_builder' ),
+					'addToLibrary'         => esc_html__( 'Add to Library', 'et_builder' ),
+					'includeGlobalPresets' => esc_html__( 'Import Presets', 'et_builder' ),
+					'imported'             => esc_html__( 'imported', 'et_builder' ),
 				),
 				'export' => array(
-					'applyCustomDefaults' => esc_html__( 'Apply Global Defaults To Exported Layout' ),
+					'applyGlobalPresets' => esc_html__( 'Apply Presets To Exported Layout' ),
 				),
 			),
 		),
@@ -1737,9 +1750,25 @@ function et_fb_get_static_backend_helpers($post_type) {
 					'extend_option'        => esc_html__( 'Extend This %s', 'et_builder' ),
 				),
 			),
-			'customDefaults' => array(
-				'title'    => esc_html__( '%s Defaults', 'et_builder' ),
+			'globalPresets' => array(
+				'title'    => esc_html__( '%s Presets', 'et_builder' ),
 				'defaults' => esc_html__( 'Defaults', 'et_builder' ),
+				'presets'  => array(
+					'preset'                => esc_html__( 'Preset', 'et_builder' ),
+					'moduleNamePreset'      => esc_html__( '%s Preset', 'et_builder' ),
+					'default'               => esc_html__( 'Default', 'et_builder' ),
+					'defaultPreset'         => esc_html__( 'Default Preset', 'et_builder' ),
+					'basedOn'               => esc_html__( 'Based On', 'et_builder' ),
+					'presetSettings'        => esc_html__( 'Preset Settings', 'et_builder' ),
+					'presetName'            => esc_html__( 'Preset Name', 'et_builder' ),
+					'assignPresetToDefault' => array(
+						'title'   => esc_html__( 'Assign Preset To Default', 'et_builder' ),
+						'options' => array(
+							'on'  => esc_html__( 'Yes', 'et_builder' ),
+							'off' => esc_html__( 'No', 'et_builder' ),
+						),
+					),
+				),
 			),
 			'layersView' => array(
 				'column'                => array(
@@ -2055,9 +2084,18 @@ function et_fb_get_static_backend_helpers($post_type) {
 				'save'           => esc_html__( 'Save Changes', 'et_builder' ),
 				'close'          => esc_html__( 'Close', 'et_builder' ),
 				'rightMenu'      => esc_html__( 'Other Settings', 'et_builder' ),
-				'customDefaults' => array(
-					'edit' => esc_html__( 'Edit Global %s Defaults', 'et_builder' ),
-					'exit' => esc_html__( 'Back To Module Settings', 'et_builder' ),
+				'globalPresets' => array(
+					'edit'                    => esc_html__( 'Manage %s Presets', 'et_builder' ),
+					'exit'                    => esc_html__( 'Back To Module Settings', 'et_builder' ),
+					'selectPreset'            => esc_html__( 'Select A Preset', 'et_builder' ),
+					'activatePreset'          => esc_html__( 'Activate Preset', 'et_builder' ),
+					'disablePreset'           => esc_html__( 'Disable Preset', 'et_builder' ),
+					'presetSettings'          => esc_html__( 'Preset Settings', 'et_builder' ),
+					'duplicatePreset'         => esc_html__( 'Duplicate Preset', 'et_builder' ),
+					'deletePreset'            => esc_html__( 'Delete Preset', 'et_builder' ),
+					'assignAsDefault'         => esc_html__( 'Assign Preset as Default', 'et_builder' ),
+					'editPresetStyles'        => esc_html__( 'Edit Preset Styles', 'et_builder' ),
+					'updateWithCurrentStyles' => esc_html__( 'Update Preset With Current Styles', 'et_builder' ),
 				),
 			),
 			'inlineEditor' => array(

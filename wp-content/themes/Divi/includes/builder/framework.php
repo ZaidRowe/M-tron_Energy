@@ -40,7 +40,7 @@ require_once ET_BUILDER_DIR . 'autoload.php';
 /**
  * Retrieve a commonly used translation.
  *
- * @since ??
+ * @since 4.4.9
  *
  * @param string $key Translation key.
  * @param boolean $reset Reset cache.
@@ -65,7 +65,7 @@ function et_builder_i18n( $key, $reset = false ) {
 /**
  * Resets commonly used translations cache.
  *
- * @since ??
+ * @since 4.4.9
  *
  * @return void
  */
@@ -76,7 +76,7 @@ function et_builder_i18n_reset_cache() {
 /**
  * Escape translation with optional value and caches the result.
  *
- * @since ??
+ * @since 4.4.9
  *
  * @param string $text
  * @param string $value
@@ -111,8 +111,8 @@ require_once ET_BUILDER_DIR . 'feature/ErrorReport.php';
 require_once ET_BUILDER_DIR . 'api/DiviExtensions.php';
 require_once ET_BUILDER_DIR . 'api/rest/BlockLayout.php';
 require_once ET_BUILDER_DIR . 'frontend-builder/theme-builder/theme-builder.php';
-require_once ET_BUILDER_DIR . 'feature/custom-defaults/Settings.php';
-require_once ET_BUILDER_DIR . 'feature/custom-defaults/History.php';
+require_once ET_BUILDER_DIR . 'feature/global-presets/Settings.php';
+require_once ET_BUILDER_DIR . 'feature/global-presets/History.php';
 
 // Conditional Includes.
 if ( et_is_woocommerce_plugin_active() ) {
@@ -167,8 +167,8 @@ if ( wp_doing_ajax() && ! is_customize_preview() ) {
 			'et_core_portability_export',
 			'et_core_portability_import',
 			'et_builder_migrate_module_customizer_phase_two',
-			'et_builder_save_custom_defaults_history',
-			'et_builder_retrieve_custom_defaults_history',
+			'et_builder_save_global_presets_history',
+			'et_builder_retrieve_global_presets_history',
 			'et_theme_builder_api_import_theme_builder_step',
 			'et_pb_submit_subscribe_form',
 			'et_builder_get_woocommerce_tabs',
@@ -178,7 +178,7 @@ if ( wp_doing_ajax() && ! is_customize_preview() ) {
 	// AJAX requests that use PHP modules cache for performance reasons.
 	$builder_use_cache_actions = array(
 		'heartbeat',
-		'et_builder_retrieve_custom_defaults_history',
+		'et_builder_retrieve_global_presets_history',
 		'et_fb_get_saved_templates',
 		'et_fb_ajax_save',
 		'et_fb_ajax_drop_autosave',

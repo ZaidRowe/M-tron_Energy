@@ -1307,6 +1307,50 @@ function et_get_attachment_id_by_url( $url ) {
 		$attachment_id             = (int) $wpdb->get_var( $attachments_sql_query );
 	}
 
+	// There is a case the GUID image URL stored differently with the URL
+	// served in the frontend for a featured image, so the query will always fail.
+	// Hence we add another fallback query to the _wp_attached_file value in 
+	// the postmeta table to match with the image relative path.
+	if ( ! $attachment_id ) {
+		$uploads         = wp_get_upload_dir();
+		$uploads_baseurl = trailingslashit( $uploads['baseurl'] );
+
+		if ( 0 === strpos( $normalized_url, $uploads_baseurl ) ) {
+			$file_path = str_replace( $uploads_baseurl, '', $normalized_url );
+			$file_path_no_resize = preg_replace( '/-(\d+)x(\d+)\.(jpg|jpeg|gif|png)$/', '.$3', $file_path );
+
+			if ( $file_path === $file_path_no_resize ) {
+				$attachments_sql_query = $wpdb->prepare(
+					"SELECT post_id
+					FROM $wpdb->postmeta
+					WHERE `meta_key` = %s
+						AND `meta_value` = %s",
+					'_wp_attached_file',
+					$file_path
+				);
+			} else {
+				// Scenario: Trying to find the attachment for a file called x-150x150.jpg.
+				// 1. Since WordPress adds the -150x150 suffix for thumbnail sizes we cannot be
+				// sure if this is an attachment or an attachment's generated thumbnail.
+				// 2. Since both x.jpg and x-150x150.jpg can be uploaded as separate attachments
+				// we must decide which is a better match.
+				// 3. The above is why we order by meta_value length and use the first result.
+				$attachments_sql_query = $wpdb->prepare(
+					"SELECT post_id
+					FROM $wpdb->postmeta
+					WHERE `meta_key` = %s
+						AND `meta_value` IN ( %s, %s )
+					ORDER BY CHAR_LENGTH( `meta_value` ) DESC",
+					'_wp_attached_file',
+					$file_path,
+					$file_path_no_resize
+				);
+			}
+
+			$attachment_id = (int) $wpdb->get_var( $attachments_sql_query );
+		}
+	}
+
 	// Cache data only if attachment ID is found.
 	if ( $attachment_id && et_core_is_uploads_dir_url( $normalized_url ) ) {
 		$cache[ $normalized_url ] = $attachment_id;

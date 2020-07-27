@@ -1851,8 +1851,8 @@ function et_pb_heartbeat_post_modified( $response ) {
 				}
 			}
 
-			$custom_defaults_manager = ET_Builder_Custom_Defaults_Settings::instance();
-			$response['et']['custom_defaults'] = $custom_defaults_manager->get_custom_defaults();
+			$global_presets_manager = ET_Builder_Global_Presets_Settings::instance();
+			$response['et']['global_presets'] = $global_presets_manager->get_global_presets();
 		} else {
 			$response['et']['post_not_modified'] = true;
 			$response['et']['action'] = 'post content not modified externally'; // dev use
@@ -2200,10 +2200,9 @@ function et_fb_get_nonces() {
 		'searchPosts'                     => wp_create_nonce( 'et_builder_search_posts' ),
 		'getPostsList'                    => wp_create_nonce( 'et_fb_get_posts_list' ),
 		'sendErrorReport'                 => wp_create_nonce( 'et_fb_send_error_report' ),
-		'saveCustomDefaultsHistory'       => wp_create_nonce( 'et_builder_save_custom_defaults_history' ),
-		'retrieveCustomDefaultsHistory'   => wp_create_nonce( 'et_builder_retrieve_custom_defaults_history' ),
+		'saveGlobalPresetsHistory'        => wp_create_nonce( 'et_builder_save_global_presets_history' ),
+		'retrieveGlobalPresetsHistory'    => wp_create_nonce( 'et_builder_retrieve_global_presets_history' ),
 		'migrateModuleCustomizerPhaseTwo' => wp_create_nonce( 'et_builder_migrate_module_customizer_phase_two' ),
-		'searchPosts'                     => wp_create_nonce( 'et_builder_search_posts' ),
 		'getWoocommerceTabs'              => wp_create_nonce( 'et_builder_get_woocommerce_tabs' ),
 	);
 
@@ -3329,40 +3328,40 @@ function et_builder_get_unsaved_notification_texts() {
 }
 endif;
 
-if ( ! function_exists( 'et_builder_get_custom_defaults_save_failure_texts' ) ) :
-function et_builder_get_custom_defaults_save_failure_texts() {
+if ( ! function_exists( 'et_builder_get_global_presets_save_failure_texts' ) ) :
+function et_builder_get_global_presets_save_failure_texts() {
 	$text = sprintf(
 		'<p>%1$s</p>
-		<a class="et-builder-custom-defaults-save-failure-download" style="display: none"></a>',
-		et_get_safe_localization( __( 'An error has occurred while saving the Global Defaults settings. Various problems can cause a save to fail, such as a lack of server resources, firewall blockages or plugin conflicts or server misconfiguration. You can try saving again by clicking Try Again, or you can download a backup of your unsaved defaults by clicking Download Backup. A backup can be helpful when contacting our Support Team.', 'et_builder' ) )
+		<a class="et-builder-global-presets-save-failure-download" style="display: none"></a>',
+		et_get_safe_localization( __( 'An error has occurred while saving the Global Presets settings. Various problems can cause a save to fail, such as a lack of server resources, firewall blockages or plugin conflicts or server misconfiguration. You can try saving again by clicking Try Again, or you can download a backup of your unsaved defaults by clicking Download Backup. A backup can be helpful when contacting our Support Team.', 'et_builder' ) )
 	);
 
 	return array(
-		'header'  => esc_html__( 'Save of Global Defaults Has Failed', 'et_builder' ),
+		'header'  => esc_html__( 'Save of Global Presets Has Failed', 'et_builder' ),
 		'text'    => $text,
 		'buttons' => array(
 			'secondary' => sprintf('<a href="#" class="et-core-modal-action et-core-modal-action-secondary">%1$s</a>', esc_html__( 'Try Again', 'et_builder' ) ),
 			'primary'   => sprintf('<a href="#" class="et-core-modal-action et-core-modal-action-primary">%1$s</a>', esc_html__( 'Download Backup', 'et_builder' ) ),
 		),
-		'classes' => 'et-builder-custom-defaults-save-failure-modal',
+		'classes' => 'et-builder-global-presets-save-failure-modal',
 	);
 }
 endif;
 
-if ( ! function_exists( 'et_builder_get_custom_defaults_load_failure_texts' ) ) :
-function et_builder_get_custom_defaults_load_failure_texts() {
+if ( ! function_exists( 'et_builder_get_global_presets_load_failure_texts' ) ) :
+function et_builder_get_global_presets_load_failure_texts() {
 	$text = sprintf(
 		'<p>%1$s</p>',
 		et_get_safe_localization( __( 'An error has occurred while loading the Global History States. Various problems can cause a save to fail, such as a lack of server resources, firewall blockages or plugin conflicts or server misconfiguration. You can try loading again by clicking Try Again.', 'et_builder' ) )
 	);
 
 	return array(
-		'header'  => esc_html__( 'Load of Global Defaults Has Failed', 'et_builder' ),
+		'header'  => esc_html__( 'Load of Global Presets Has Failed', 'et_builder' ),
 		'text'    => $text,
 		'buttons' => array(
 			'primary' => sprintf( '<a href="#" class="et-core-modal-action et-core-modal-action-primary">%1$s</a>', esc_html__( 'Try Again', 'et_builder' ) )
 		),
-		'classes' => 'et-builder-custom-defaults-load-failure-modal',
+		'classes' => 'et-builder-global-presets-load-failure-modal',
 	);
 }
 endif;
@@ -6163,7 +6162,7 @@ if ( ! function_exists( 'et_maybe_enable_embed_shortcode' ) ):
 	/**
 	 * Maybe enable [embed] shortcode at the content.
 	 *
-	 * @since ??
+	 * @since 4.4.9
 	 *
 	 * @param string  $content
 	 * @param boolean $is_content
