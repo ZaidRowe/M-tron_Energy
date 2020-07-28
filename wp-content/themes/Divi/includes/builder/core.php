@@ -369,8 +369,8 @@ function et_get_registered_post_type_options( $usort = false, $require_editor = 
 		return ET_Core_Cache::get( $key );
 	}
 
-	$blacklist = et_builder_get_blacklisted_post_types();
-	$whitelist = et_builder_get_third_party_post_types();
+	$blocklist = et_builder_get_blocklisted_post_types();
+	$allowlist = et_builder_get_third_party_post_types();
 
 	// Extra and Library layouts shouldn't appear in Theme Options as configurable post types.
 	/**
@@ -378,9 +378,9 @@ function et_get_registered_post_type_options( $usort = false, $require_editor = 
 	 *
 	 * @since 4.0
 	 *
-	 * @param string[] $blacklist Post types to blacklist.
+	 * @param string[] $blocklist Post types to blocklist.
 	 */
-	$blacklist      = apply_filters( 'et_builder_post_type_options_blacklist', array_merge( $blacklist, array(
+	$blocklist      = apply_filters( 'et_builder_post_type_options_blocklist', array_merge( $blocklist, array(
 		'et_pb_layout',
 		'layout',
 	) ) );
@@ -390,12 +390,12 @@ function et_get_registered_post_type_options( $usort = false, $require_editor = 
 	$post_types     = array();
 
 	foreach ( $raw_post_types as $post_type ) {
-		$is_whitelisted  = in_array( $post_type->name, $whitelist );
-		$is_blacklisted  = in_array( $post_type->name, $blacklist );
+		$is_allowlisted  = in_array( $post_type->name, $allowlist );
+		$is_blocklisted  = in_array( $post_type->name, $blocklist );
 		$supports_editor = $require_editor ? post_type_supports( $post_type->name, 'editor' ) : true;
 		$is_public       = et_builder_is_post_type_public( $post_type->name );
 
-		if ( ! $is_whitelisted && ( $is_blacklisted || ! $supports_editor || ! $is_public ) ) {
+		if ( ! $is_allowlisted && ( $is_blocklisted || ! $supports_editor || ! $is_public ) ) {
 			continue;
 		}
 
@@ -438,12 +438,12 @@ add_action( 'registered_post_type', 'et_clear_registered_post_type_options_cache
 /**
  * Get the list of unsupported Post Types.
  *
- * @since 3.10
+ * @since ??
  *
  * @return array
  */
-function et_builder_get_blacklisted_post_types() {
-	return apply_filters( 'et_builder_post_type_blacklist', array(
+function et_builder_get_blocklisted_post_types() {
+	return apply_filters( 'et_builder_post_type_blocklist', array(
 		// LearnDash
 		'sfwd-essays',
 
@@ -452,6 +452,20 @@ function et_builder_get_blacklisted_post_types() {
 		'topic',
 		'reply',
 	) );
+}
+
+/**
+ * Get the list of unsupported Post Types.
+ *
+ * @deprecated ?? No longer used by internal code; use `et_builder_get_blocklisted_post_types` instead.
+ *
+ * @since 3.10
+ * @since ?? Aliased to `et_builder_get_blocklisted_post_types`.
+ *
+ * @return array
+ */
+function et_builder_get_blacklisted_post_types() {
+	return et_builder_get_blocklisted_post_types();
 }
 
 /**
@@ -539,7 +553,7 @@ function et_builder_get_enabled_builder_post_types() {
 	$filtered = array();
 
 	foreach ( $options as $post_type => $state ) {
-		if ( 'on' === $state && array_key_exists( $post_type, et_get_registered_post_type_options() ) && ! in_array( $post_type, et_builder_get_blacklisted_post_types() ) ) {
+		if ( 'on' === $state && array_key_exists( $post_type, et_get_registered_post_type_options() ) && ! in_array( $post_type, et_builder_get_blocklisted_post_types() ) ) {
 			$filtered[] = $post_type;
 		}
 	}
@@ -669,13 +683,13 @@ function et_pb_is_allowed( $capabilities, $role = '' ) {
 		return false;
 	}
 
-	// Disable certain capabilities for non-whitelisted roles by default.
+	// Disable certain capabilities for non-allowlisted roles by default.
 	$dangerous       = array( 'theme_builder', 'read_dynamic_content_custom_fields' );
-	$roles_whitelist = array( 'administrator', 'et_support_elevated', 'et_support' );
+	$roles_allowlist = array( 'administrator', 'et_support_elevated', 'et_support' );
 
 	foreach ( (array) $capabilities as $capability ) {
 		$is_dangerous = in_array( $capability, $dangerous, true );
-		$role_not_whitelisted = ! in_array( $role, $roles_whitelist, true );
+		$role_not_allowlisted = ! in_array( $role, $roles_allowlist, true );
 
 		if ( $test_current_user && $is_dangerous && is_multisite() && is_super_admin() ) {
 			// Super admins always have access to dangerous capabilities and that cannot be
@@ -687,8 +701,8 @@ function et_pb_is_allowed( $capabilities, $role = '' ) {
 			return 'on' === $saved_capabilities[ $role ][ $capability ];
 		}
 
-		if ( $is_dangerous && $role_not_whitelisted ) {
-			// Whitelisted roles have access to dangerous capabilities by default,
+		if ( $is_dangerous && $role_not_allowlisted ) {
+			// Allowlisted roles have access to dangerous capabilities by default,
 			// but that can be changed in the role editor.
 			return false;
 		}
@@ -1186,12 +1200,12 @@ function et_pb_add_template_meta() {
 	$value = ! empty( $_POST['et_meta_value'] ) ? sanitize_text_field( $_POST['et_meta_value'] ) : '';
 	$custom_field = ! empty( $_POST['et_custom_field'] ) ? sanitize_text_field( $_POST['et_custom_field'] ) : '';
 
-	$whitelisted_meta_keys = array(
+	$allowlisted_meta_keys = array(
 		'_et_pb_row_layout',
 		'_et_pb_module_type',
 	);
 
-	if ( in_array( $custom_field, $whitelisted_meta_keys ) ) {
+	if ( in_array( $custom_field, $allowlisted_meta_keys ) ) {
 		update_post_meta( $post_id, $custom_field, $value );
 	}
 }
@@ -1545,7 +1559,7 @@ function et_pb_load_layout() {
 		die( -1 );
 	}
 
-	// sanitize via whitelisting
+	// sanitize via allowlisting
 	$replace_content = isset( $_POST['et_replace_content'] ) && 'on' === $_POST['et_replace_content'] ? 'on' : 'off';
 
 	set_theme_mod( 'et_pb_replace_content', $replace_content );
@@ -1655,7 +1669,7 @@ function et_builder_is_builder_built( $post_id, $built_by_builder ) {
 		return false;
 	}
 
-	// whitelist the builder slug
+	// allowlist the builder slug
 	$built_by_builder = in_array( $built_by_builder, array( 'fb', 'bb' ) ) ? $built_by_builder : '';
 
 	// the built by slug prepended to the first section automatically, in this format: fb_built="1"
@@ -2816,7 +2830,7 @@ add_action( 'wp_ajax_et_pb_save_role_settings', 'et_pb_save_role_settings' );
  * @return array An array of tags to be removed during strip_shortcodes() call.
  */
 function et_pb_strip_non_builder_shortcodes_tagnames( $tags_to_remove ) {
-	// Initial whitelist
+	// Initial allowlist
 	$valid_tags = ET_Builder_Element::get_module_slugs_by_post_type();
 
 	/**
@@ -2827,7 +2841,7 @@ function et_pb_strip_non_builder_shortcodes_tagnames( $tags_to_remove ) {
 	 */
 	$valid_tags = apply_filters( 'et_pb_valid_builder_shortcodes', $valid_tags );
 
-	// Generate a blacklist, by subtracting the whitelist from all registered shortcodes.
+	// Generate a blocklist, by subtracting the allowlist from all registered shortcodes.
 	$tags_to_remove = array_diff( $tags_to_remove, $valid_tags );
 
 	return $tags_to_remove;
@@ -5966,7 +5980,7 @@ function et_builder_get_public_post_types() {
 	$cache_key = 'et_builder_get_public_post_types';
 
 	if ( ! et_core_cache_has( $cache_key ) ) {
-		$blacklist      = array_merge( array(
+		$blocklist      = array_merge( array(
 			'et_pb_layout',
 			ET_THEME_BUILDER_TEMPLATE_POST_TYPE,
 		), et_theme_builder_get_layout_post_types() );
@@ -5974,7 +5988,7 @@ function et_builder_get_public_post_types() {
 		$post_types     = array();
 
 		foreach ( $all_post_types as $post_type ) {
-			if ( ! in_array( $post_type->name, $blacklist, true ) && et_builder_is_post_type_public( $post_type->name ) ) {
+			if ( ! in_array( $post_type->name, $blocklist, true ) && et_builder_is_post_type_public( $post_type->name ) ) {
 				$post_types[ $post_type->name ] = $post_type;
 			}
 		}

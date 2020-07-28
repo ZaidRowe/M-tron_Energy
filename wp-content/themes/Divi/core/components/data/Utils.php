@@ -966,7 +966,7 @@ class ET_Core_Data_Utils {
 	 * Returns RFC 4211 compliant Universally Unique Identifier (UUID) version 4
 	 * https://tools.ietf.org/html/rfc4122
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @param array $random_sequence The initial random sequence. Mostly used for test purposes.
 	 *

@@ -15,7 +15,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Returns instance of the singleton class
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @return ET_Builder_Global_Presets_History
 	 */
@@ -45,7 +45,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Handles AJAX requests to save history of Global Presets settings changes
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @return void
 	 */
@@ -79,7 +79,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Handles AJAX requests to retrieve history of Global Presets settings changes
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @return void
 	 */
@@ -98,7 +98,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Adds a new Global Presets settings history record
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @param {Object} $defaults
 	 */
@@ -133,7 +133,7 @@ class ET_Builder_Global_Presets_History {
 	 * Performs validation and sanitizing history object.
 	 * Returns false if data is invalid or corrupt.
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @param $data
 	 *
@@ -201,7 +201,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Handles theme version rollback.
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @param string $product_name - The short name of the product rolling back.
 	 * @param string $rollback_from_version
@@ -220,7 +220,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Returns the Global Presets history object from DB
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @return object
 	 */
@@ -239,7 +239,7 @@ class ET_Builder_Global_Presets_History {
 	/**
 	 * Migrates Custom Defaults history format to Global Presets history format
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 */
 	public static function migrate_custom_defaults_history() {
 		if ( et_is_builder_plugin_active() || ET_Builder_Global_Presets_Settings::are_custom_defaults_migrated() ) {

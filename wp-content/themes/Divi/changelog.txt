@@ -1,5 +1,75 @@
+version 4.5.1 ( updated 07-13-2020 )
+- Fixed the issue preventing to switch between the tabs of the responsive options.
+- Added hover background when button is hovered in Visual Builder.
+- Allow 3rd Party Extension to use builder editable elements on their custom modules.
+- Fixed PHP 7.4+ deprecated passing parameters to implode in reverse order.
+- Fixed bug with Parallax effect on iPad with iOS 13.
+- Prevent setting selected option on the 2nd position in select control when total results size is 1.
+- Fixed Blog Module conflict with Video widget.
+- Fixed issue with dynamic categories on custom post types.
+- Fixed the Button Icon option description text.
+- Fixed CSS filter's hover transition effect on desktop.
+- Fixed contact form rendering issue when option filed was added with keyboard shortcut.
+- Fixed products per page plugin compatibility.
+- Fixed the issue where module attributes were empty while importing a layout either through Divi Library or Divi Builder.
+- Fixed the issue caused by incompatibility with PHP 5.4.
+- Changed blacklist and whitelist terms to blocklist and allowlist throughout codebase.
+- Fixed a typo in the Theme Options "Grab the first post image" option description.
+	* core/admin/js/support-center.js
+	* core/components/Portability.php
+	* core/components/SupportCenter.php
+	* core/components/VersionRollback.php
+	* core/components/api/ElegantThemes.php
+	* core/components/data/Utils.php
+	* core/components/mu-plugins/SupportCenterSafeModeDisablePlugins.php
+	* core/functions.php
+	* core/ui/utils/utils.js
+	* epanel/custom_functions.php
+	* includes/builder/ab-testing.php
+	* includes/builder/class-et-builder-element.php
+	* includes/builder/core.php
+	* includes/builder/deprecations.php
+	* includes/builder/feature/dynamic-content.php
+	* includes/builder/feature/global-presets/History.php
+	* includes/builder/feature/global-presets/Settings.php
+	* includes/builder/feature/woocommerce-modules.php
+	* includes/builder/frontend-builder/bundle.js
+	* includes/builder/frontend-builder/theme-builder/theme-builder.php
+	* includes/builder/functions.php
+	* includes/builder/module/Blurb.php
+	* includes/builder/module/ContactFormItem.php
+	* includes/builder/module/helpers/HoverOptions.php
+	* includes/builder/plugin-compat/eventon.php
+	* includes/builder/plugin-compat/woocommerce.php
+	* includes/builder/scripts/frontend/scripts.js
+	* includes/builder/scripts/src/builder.js
+	* options_divi.php
+
 version 4.5 ( updated 07-09-2020 )
 - Added new Divi Presets system
+- Latest Products sorting option added in the Shop Module.
+- Fixed query to the image by URL failed when served URL different with guid URL.
+- Fixed duplicate Post Tags group label name on Theme Builder settings when The Events Calendar plugin is enabled.
+- If a WooCommerce product has no ratings, the demo rating is shown so you can edit the Woo Rating Module settings in Visual Builder.
+- Fixed TB layout and template is not being updated immediately on the FE when caching plugin is active.
+- Fixed a bug which were causing View Modified Styles right-click menu in Layers panel to not work in some cases.
+- Fixed turning off the default background color for slides for FullWidth Slider and Slider modules.
+  * core/admin/js/portability.js
+  * core/components/data/Utils.php
+  * core/components/Portability.php
+  * core/functions.php
+  * includes/builder/class-et-builder-element.php
+  * includes/builder/class-et-global-settings.php
+  * includes/builder/core.php
+  * includes/builder/feature/global-presets/History.php
+  * includes/builder/feature/global-presets/Settings.php
+  * includes/builder/framework.php
+  * includes/builder/frontend-builder/bundle.js
+  * includes/builder/frontend-builder/theme-builder/api.php
+  * includes/builder/frontend-builder/theme-builder/theme-builder.php
+  * includes/builder/functions.php
+  * includes/builder/module/Shop.php
+  * includes/builder/module/SliderItem.php
 
 version 4.4.9 ( updated 07-01-2020 )
 - Fixed conflict "Use Current Page" option with "Product Category" view type in Shop Module.
@@ -1047,7 +1117,7 @@ version 4.1 ( updated 01-09-2020 )
 - Fixed large import files failing to import in the Theme Builder.
 - Introduced paste styles on mixed selected items.
 - Fixed Woo Related Products to display only Products when used in Shop page irrespective of the Theme Customizer's Shop Page Display setting.
-- Added the Skype protocol ("skype:") to WP's URL whitelist, so that Skype URLs can be used in link fields.
+- Added the Skype protocol ("skype:") to WP's URL allowlist, so that Skype URLs can be used in link fields.
 - Updated translation tasks so it can handle Divi Layout Block's translatable string mechanism.
 - Added styling for Block Editor which matches Divi's frontend appearance.
 	* core/functions.php
@@ -1932,7 +2002,7 @@ version 4.0.2 ( updated 10-18-2019 )
 	* includes/builder/plugin-compat/wp-smushit.php
 
 version 4.0.1 ( updated 10-17-2019 )
-- Added Remote User roles to the whitelist used for capability checks on "dangerous" capabilities.
+- Added Remote User roles to the allowlist used for capability checks on "dangerous" capabilities.
 - Fixed button not visible on hover for Slider, Fullwitdh Header & Pricing Table module.
 - Fixed videos don't works on mobile.
 - TB keyboard shortcuts were overriding VB shortcuts. TinyMCE event handling was probably more aggressive which is why it worked.
@@ -2892,7 +2962,7 @@ version 3.25 ( updated 06-20-2019 )
 - Fixed copy/paste issue between Speciality and Normal section, when Speciality Inner row Sizing settings was copied on Normal section.
 - Fixed Speciality Section Inner Module Alignment.
 - Fixed cases when user could not focus on inline text editor for modules in 1/4 columns.
-- Added the "Really Simple SSL" plugin to Support Center's Safe Mode whitelist.
+- Added the "Really Simple SSL" plugin to Support Center's Safe Mode allowlist.
 - Fixed Project meta section appearing twice on projects that use the "No Sidebar" layout and do not use the builder.
 	* core/components/SupportCenter.php
 	* includes/builder/class-et-builder-element.php

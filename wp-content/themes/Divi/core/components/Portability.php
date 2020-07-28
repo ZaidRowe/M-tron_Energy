@@ -1192,7 +1192,7 @@ class ET_Core_Portability {
 	/**
 	 * Generates UUIDs for the presets to avoid collisions.
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @param array $global_presets - The Global Presets to be imported
 	 *
@@ -1230,7 +1230,7 @@ class ET_Core_Portability {
 	/**
 	 * Injects the given Global Presets settings into the imported layout
 	 *
-	 * @since ??
+	 * @since 4.5.0
 	 *
 	 * @param array $shortcode_object - The multidimensional array representing a page/module structure
 	 * @param array $global_presets - The Global Presets to be imported
@@ -1286,7 +1286,9 @@ class ET_Core_Portability {
 				if ( isset( $global_presets[ $module_type ]['presets'][ $module_preset_id ] ) ) {
 					$module['attrs'] = array_merge( $global_presets[ $module_type ]['presets'][ $module_preset_id ]['settings'], $module['attrs'] );
 				} else {
-					$module['attrs'] = array_merge( $global_presets[ $module_type ]['presets'][ $default_preset_id ]['settings'], $module['attrs'] );
+					if ( isset( $global_presets[ $module_type ]['presets'][ $default_preset_id ]['settings'] ) ) {
+						$module['attrs'] = array_merge( $global_presets[ $module_type ]['presets'][ $default_preset_id ]['settings'], $module['attrs'] );
+					}
 				}
 			}
 
@@ -2018,7 +2020,7 @@ class ET_Core_Portability {
 			$preset_id   = $global_presets_manager->get_module_preset_id( $module_type, $module['attrs'] );
 			$preset      = $global_presets_manager->get_module_preset( $module_type, $preset_id );
 
-			if ( $preset_id !== 'default' && ! empty( (array) $preset ) && ! empty( (array) $preset->settings ) ) {
+			if ( $preset_id !== 'default' && count( (array) $preset ) !== 0 && count( (array) $preset->settings ) !== 0 ) {
 				if ( ! isset( $used_global_presets[ $module_type ] ) ) {
 					$used_global_presets[ $module_type ] = (object) array(
 						'presets' => (object) array(),

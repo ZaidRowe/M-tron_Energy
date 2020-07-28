@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ET_BUILDER_PRODUCT_VERSION' ) ) {
 	// Note, this will be updated automatically during grunt release task.
-	define( 'ET_BUILDER_PRODUCT_VERSION', '4.5.0' );
+	define( 'ET_BUILDER_PRODUCT_VERSION', '4.5.1' );
 }
 
 if ( ! defined( 'ET_BUILDER_VERSION' ) ) {
@@ -1396,7 +1396,7 @@ function et_pb_process_computed_property() {
 	$conditional_tags = $_POST['conditional_tags'];
 	$current_page     = $_POST['current_page'];
 
-	// whitelist keys
+	// allowlist keys
 	$conditional_tags = array_intersect_key( $conditional_tags, et_fb_conditional_tag_params() );
 	$current_page     = array_intersect_key( $current_page, et_fb_current_page_params() );
 
@@ -1694,7 +1694,7 @@ function et_fb_ajax_render_shortcode() {
 	$options = isset( $_POST['options'] ) ? $utils->sanitize_text_fields( $_POST['options'] ) : array();
 
 	// enforce valid module slugs only
-	// shortcode slugs need to be whitelisted so as to prevent malicious shortcodes from being generated and run through do_shortcode().
+	// shortcode slugs need to be allowlisted so as to prevent malicious shortcodes from being generated and run through do_shortcode().
 	$options['force_valid_slugs'] = true;
 
 	// convert shortcode array to shortcode string.
@@ -8864,7 +8864,7 @@ function et_pb_custom_search( $query = false ) {
 		if ( isset( $_GET['et_pb_include_pages'] ) ) $postTypes = array( 'page' );
 		if ( isset( $_GET['et_pb_include_posts'] ) ) $postTypes[] = 'post';
 
-		// $postTypes is whitelisted values only
+		// $postTypes is allowlisted values only
 		$query->set( 'post_type', $postTypes );
 
 		if ( ! empty( $_GET['et_pb_search_cat'] ) ) {
@@ -9789,7 +9789,7 @@ function et_fb_process_shortcode( $content, $parent_address = '', $global_parent
 	return $_matches;
 }
 
-// Whitelist any additional attributes
+// Allowlist any additional attributes
 function et_fb_add_additional_attrs( $processed_attrs, $output ) {
 	if ( empty( $output['attrs'] ) ) {
 		return $output;
@@ -9797,18 +9797,18 @@ function et_fb_add_additional_attrs( $processed_attrs, $output ) {
 
 	// A list of all the attributes that are already returned after the shortcode is processed
 	$safe_attrs           = array_keys( $output['attrs'] );
-	$whitelisted_attrs    = array();
+	$allowlisted_attrs    = array();
 
 	foreach ( $processed_attrs as $attr => $value ) {
 		if ( ! preg_match( '~_hover(_enabled)?$~', $attr ) ) {
 			continue;
 		}
 
-		$whitelisted_attrs[$attr] = $value;
+		$allowlisted_attrs[$attr] = $value;
 	}
 
-	if ( $whitelisted_attrs ) {
-		$output['attrs'] = array_merge( $output['attrs'], $whitelisted_attrs );
+	if ( $allowlisted_attrs ) {
+		$output['attrs'] = array_merge( $output['attrs'], $allowlisted_attrs );
 	}
 
 	return $output;
